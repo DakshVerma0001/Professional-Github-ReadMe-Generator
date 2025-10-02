@@ -3,7 +3,7 @@ how to create a GitHub App, configure env, run, test endpoints, and notes about 
 
 Key points (summary):
 
-Create a GitHub App at https://github.com/settings/DeveloperSettings
+Create a GitHub App at https://github.com/settings/apps/new .
 
 Give it a name (e.g. readme-gen-bot).
 
