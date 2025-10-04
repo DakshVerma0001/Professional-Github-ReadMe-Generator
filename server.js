@@ -16,8 +16,7 @@ const app = express();
 // Simple request logger
 app.use(morgan('dev'));
 
-// --- WEBHOOK route MUST come BEFORE express.json() middleware ---
-// It uses express.raw so we can compute HMAC on the raw request body exactly as GitHub sent it.
+
 app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   try {
     // Basic connectivity check if secret missing
@@ -77,7 +76,7 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
       console.warn('Failed to parse webhook JSON payload', e);
     }
 
-    console.log(`✅ Webhook received: event=${event} delivery=${delivery}`);
+    console.log(`Webhook received: event=${event} delivery=${delivery}`);
     // Lightweight logging of payload keys to avoid huge dumps
     if (payload && typeof payload === 'object') {
       const repoFullName = payload.repository?.full_name;
@@ -93,7 +92,7 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
     }
 
     // TODO: enqueue or trigger repo analysis for push/pull_request events
-    // Example: if (event === 'push') triggerAnalysis(payload.repository.full_name, payload.ref, installation_id...)
+    
 
     return res.status(200).send('ok');
   } catch (err) {
@@ -102,7 +101,7 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   }
 });
 
-// Now other middleware/routes (these need parsed JSON bodies)
+// middleware/routes
 app.use(express.json());
 
 // Health
