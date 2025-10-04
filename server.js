@@ -1,8 +1,9 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const crypto = require('crypto');
-const morgan = require('morgan'); // optional but nice for request logs
+const morgan = require('morgan'); 
 const { getAppOctokit, getInstallationOctokit, getRepoTree, getFileContent } = require('./lib/github');
+const { analyzeRepo } = require('./lib/analyze'); // <-- new
 
 dotenv.config();
 
@@ -162,5 +163,32 @@ app.get('/repos/:owner/:repo/file', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+// -------------------- NEW: Analyze endpoint --------------------
+// POST /analyze
+// Body JSON: { installation_id: number, owner: string, repo: string, ref?: string }
+// Returns: { ok: true, analysis: {...} }
+app.post('/analyze', async (req, res) => {
+  try {
+    const { installation_id, owner, repo, ref = 'main' } = req.body || {};
+    if (!installation_id || !owner || !repo) {
+      return res.status(400).json({ error: 'installation_id, owner and repo are required in JSON body' });
+    }
+
+    // get installation octokit
+    const installationOctokit = await getInstallationOctokit(installation_id);
+
+    // run analysis
+    const analysis = await analyzeRepo(installationOctokit, owner, repo, ref);
+
+    // return compact JSON
+    return res.json({ ok: true, analysis });
+  } catch (err) {
+    console.error('POST /analyze error', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+// ----------------------------------------------------------------
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
